@@ -125,8 +125,8 @@ function DownloaderPage() {
         </section>
 
         <Card className="status-frame glass" id="downloader">
-          <CardHeader>
-            <CardTitle>Download Status</CardTitle>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-[1.4rem] font-bold text-[hsl(220_26%_98%)]">Download Status</CardTitle>
           </CardHeader>
           <CardContent className="stack-md">
             <div className="badge-row">
