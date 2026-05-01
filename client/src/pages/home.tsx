@@ -146,9 +146,10 @@ function DownloaderPage() {
         </Card>
 
         <section className="feature-grid" id="features">
-          <article className="feature-card glass"><h3>Live metadata</h3><p>Retrieves latest official Roblox macOS version details from Roblox client settings.</p></article>
-          <article className="feature-card glass"><h3>Cached responsibly</h3><p>Server caches metadata for 10 minutes to reduce upstream requests.</p></article>
-          <article className="feature-card glass"><h3>Integrated flow</h3><p>The app resolves the package URL server-side, then starts download from a clean endpoint.</p></article>
+          <article className="feature-card glass"><h3>whats ups</h3><p>yogurt gurt: yo</p></article>
+          <article className="feature-card glass"><h3>hello admins </h3><p>TNTIWD</p></article>
+          <article className="feature-card glass"><h3>what in the what</h3><p>if hes invincible why can i still see him</p></article>
+          <article className="feature-card glass"><h3>4th card</h3><p>yeah</p></article>
         </section>
       </div>
     </main>
