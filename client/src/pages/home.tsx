@@ -1,4 +1,4 @@
-import { FormEvent, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -6,76 +6,103 @@ import { Progress } from "@/components/ui/progress";
 import { useRobloxVersion } from "@/hooks/use-roblox-version";
 
 const PLATFORM_LABEL = "macOS";
-const AUTH_STORAGE_KEY = "site_unlocked";
-const SITE_PASSWORD = import.meta.env.VITE_SITE_PASSWORD || "letmein";
 
-function InlineNotice({
-  tone,
-  title,
-  message,
-}: {
-  tone: "success" | "error";
-  title: string;
-  message: string;
-}) {
+function PasswordPage({ onSuccess }: { onSuccess: () => void }) {
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+
+  const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setError("");
+    setSubmitting(true);
+
+    try {
+      const response = await fetch("/api/auth", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password }),
+      });
+
+      if (!response.ok) {
+        setError("Incorrect password. Please try again.");
+        return;
+      }
+
+      onSuccess();
+    } catch {
+      setError("Authentication service is unavailable. Please retry.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   return (
-    <div
-      className={`notice notice-${tone}`}
-      role={tone === "error" ? "alert" : "status"}
-      aria-live="polite"
-    >
-      <p className="notice-title">{title}</p>
-      <p className="notice-message">{message}</p>
-    </div>
+    <main className="screen-wrap">
+      <section className="auth-panel page-fade" aria-labelledby="auth-title">
+        <p className="eyebrow">Secure access</p>
+        <h1 id="auth-title">Enter site password</h1>
+        <p className="supporting-text">Access is restricted. Enter your password to continue to the downloader.</p>
+        <form onSubmit={onSubmit} className="stack-sm" noValidate>
+          <label htmlFor="site-password" className="field-label">Password</label>
+          <Input
+            id="site-password"
+            type="password"
+            autoComplete="current-password"
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+            placeholder="Enter password"
+            required
+          />
+          {error ? <p className="inline-error" role="alert">{error}</p> : null}
+          <Button type="submit" className="btn-primary" disabled={submitting}>
+            {submitting ? "Checking access" : "Continue"}
+          </Button>
+        </form>
+      </section>
+    </main>
   );
 }
 
-export default function Home() {
+function LoadingPage() {
+  const [stepIndex, setStepIndex] = useState(0);
+  const steps = ["Verifying access", "Loading downloader", "Preparing latest build data"];
+
+  useEffect(() => {
+    const interval = window.setInterval(() => setStepIndex((prev) => (prev + 1) % steps.length), 900);
+    return () => window.clearInterval(interval);
+  }, []);
+
+  return (
+    <main className="screen-wrap page-fade">
+      <section className="loading-panel" aria-live="polite" role="status">
+        <div className="spinner" aria-hidden="true" />
+        <p className="supporting-text">{steps[stepIndex]}</p>
+      </section>
+    </main>
+  );
+}
+
+function DownloaderPage() {
   const { data: version, isLoading, isError, refetch, isRefetching } = useRobloxVersion();
-  const [isUnlocked, setIsUnlocked] = useState(() => window.localStorage.getItem(AUTH_STORAGE_KEY) === "true");
-  const [passwordInput, setPasswordInput] = useState("");
-  const [passwordError, setPasswordError] = useState("");
-  const [showLoadingScreen, setShowLoadingScreen] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
   const [downloadProgress, setDownloadProgress] = useState(0);
-  const [statusMessage, setStatusMessage] = useState<string>("");
-  const [statusTone, setStatusTone] = useState<"success" | "error" | null>(null);
+  const [status, setStatus] = useState<{ tone: "success" | "error"; message: string } | null>(null);
 
-  const releaseLabel = useMemo(() => {
-    if (!version) return "Unavailable";
-    return version;
-  }, [version]);
-
-  const handleUnlock = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    if (passwordInput !== SITE_PASSWORD) {
-      setPasswordError("Incorrect password. Please try again.");
-      return;
-    }
-
-    setPasswordError("");
-    setShowLoadingScreen(true);
-
-    window.setTimeout(() => {
-      window.localStorage.setItem(AUTH_STORAGE_KEY, "true");
-      setIsUnlocked(true);
-      setShowLoadingScreen(false);
-    }, 900);
-  };
+  const releaseLabel = useMemo(() => version || "Unavailable", [version]);
 
   const beginProgressAnimation = () => {
-    setDownloadProgress(10);
-    const checkpoints = [25, 42, 58, 73, 88, 100];
+    const checkpoints = [14, 28, 44, 67, 84, 100];
     checkpoints.forEach((value, index) => {
-      window.setTimeout(() => setDownloadProgress(value), 320 * (index + 1));
+      window.setTimeout(() => setDownloadProgress(value), 260 * (index + 1));
     });
   };
 
-  const handleDownload = async () => {
+  const handleDownload = () => {
     if (!version || isDownloading) return;
-
-    setStatusMessage("");
-    setStatusTone(null);
+    setStatus(null);
+    setDownloadProgress(8);
     setIsDownloading(true);
     beginProgressAnimation();
 
@@ -83,131 +110,100 @@ export default function Home() {
       const downloadUrl = `https://setup.rbxcdn.com/mac/${version}-RobloxPlayer.zip`;
       window.open(downloadUrl, "_blank", "noopener,noreferrer");
       window.setTimeout(() => {
-        setStatusTone("success");
-        setStatusMessage("Download started. Open the ZIP file and run RobloxPlayerInstaller.");
+        setStatus({ tone: "success", message: "Download started. Open the ZIP and run RobloxPlayerInstaller." });
       }, 1200);
     } catch {
-      setStatusTone("error");
-      setStatusMessage("Could not start the download. Please try again.");
+      setStatus({ tone: "error", message: "Could not start the download. Please try again." });
     } finally {
       window.setTimeout(() => {
         setIsDownloading(false);
         setDownloadProgress(0);
-      }, 2200);
+      }, 2300);
     }
   };
 
-  if (!isUnlocked) {
-    return (
-      <main className="page-shell auth-shell">
-        <div className="page-glow" aria-hidden="true" />
-        <Card className="glass-panel auth-card fade-in">
-          <CardHeader>
-            <CardTitle>Protected Access</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="auth-copy">Enter the site password to continue.</p>
-            <form onSubmit={handleUnlock} className="auth-form">
-              <Input
-                type="password"
-                value={passwordInput}
-                onChange={(event) => setPasswordInput(event.target.value)}
-                placeholder="Enter password"
-                autoComplete="current-password"
-              />
-              <Button type="submit" className="primary-action">Unlock site</Button>
-            </form>
-            {passwordError && <p className="auth-error">{passwordError}</p>}
-          </CardContent>
-        </Card>
-
-        {showLoadingScreen && (
-          <div className="loading-overlay" role="status" aria-live="polite">
-            <div className="loading-card glass-panel">
-              <p>Loading downloader…</p>
-              <div className="loading-bar" aria-hidden="true" />
-            </div>
-          </div>
-        )}
-      </main>
-    );
-  }
-
   return (
-    <main className="page-shell">
-      <div className="page-glow" aria-hidden="true" />
-      <div className="layout fade-in">
-        <header className="top-nav glass-panel">
-          <p className="app-name">Roblox Mac Downloader</p>
-          <nav aria-label="Primary" className="nav-links">
-            <a href="#home">Home</a>
-            <a href="#download">Download</a>
-            <a href="#help">Help</a>
-          </nav>
+    <main className="app-shell page-fade">
+      <div className="app-layout">
+        <header className="nav-frame">
+          <p className="brand">Sigmund RBX</p>
+          <p className="caption">Minimal macOS downloader</p>
         </header>
 
-        <section id="home" className="hero glass-panel">
-          <p className="hero-kicker">Fast setup for {PLATFORM_LABEL}</p>
-          <h1>Install Roblox on macOS</h1>
-          <p className="hero-copy">
-            Download the latest Roblox player package for Mac and follow a simple, guided setup flow.
-          </p>
-          <div className="hero-actions">
-            <Button
-              onClick={handleDownload}
-              disabled={!version || isLoading || isDownloading}
-              className="primary-action"
-              data-testid="button-download-hero"
-            >
-              {isDownloading ? "Starting download" : "Download for Mac"}
-            </Button>
-            <Button asChild variant="outline" className="secondary-action">
-              <a href="#help">View instructions</a>
-            </Button>
-          </div>
+        <section className="hero-frame">
+          <p className="eyebrow">Roblox for macOS</p>
+          <h1>Download the latest Roblox build</h1>
+          <p className="supporting-text">Reliable access to the latest public Roblox player package for Mac.</p>
         </section>
 
-        <Card id="download" className="glass-panel main-card">
+        <Card className="status-frame">
           <CardHeader>
             <CardTitle>Download status</CardTitle>
           </CardHeader>
-          <CardContent className="status-grid">
-            <div>
-              <p className="label">Detected platform</p>
-              <p className="value">{PLATFORM_LABEL}</p>
+          <CardContent className="stack-md">
+            <div className="meta-grid">
+              <div>
+                <p className="meta-label">Platform</p>
+                <p className="meta-value">{PLATFORM_LABEL}</p>
+              </div>
+              <div>
+                <p className="meta-label">Latest build</p>
+                {isLoading || isRefetching ? (
+                  <p className="meta-value muted">Checking build data…</p>
+                ) : isError ? (
+                  <div className="inline-actions">
+                    <p className="meta-value error">Unavailable</p>
+                    <Button variant="outline" size="sm" onClick={() => refetch()}>Retry</Button>
+                  </div>
+                ) : (
+                  <p className="meta-value">{releaseLabel}</p>
+                )}
+              </div>
             </div>
-            <div>
-              <p className="label">Current Roblox build</p>
-              {isLoading || isRefetching ? (
-                <div className="skeleton-line" aria-hidden="true" />
-              ) : isError ? (
-                <div className="inline-row">
-                  <p className="value value-error">Unable to load</p>
-                  <Button variant="outline" onClick={() => refetch()} size="sm" data-testid="button-retry">
-                    Retry
-                  </Button>
-                </div>
-              ) : (
-                <p className="value" data-testid="version-display">{releaseLabel}</p>
-              )}
-            </div>
-            <div className="progress-wrap" aria-live="polite">
-              <div className="inline-row">
-                <p className="label">Progress</p>
-                <p className="value value-subtle">{Math.round(downloadProgress)}%</p>
+
+            <div className="stack-sm">
+              <div className="inline-actions">
+                <p className="meta-label">Progress</p>
+                <p className="meta-label">{Math.round(downloadProgress)}%</p>
               </div>
               <Progress value={downloadProgress} />
             </div>
-            {statusTone && statusMessage && (
-              <InlineNotice
-                tone={statusTone}
-                title={statusTone === "success" ? "Download ready" : "Action required"}
-                message={statusMessage}
-              />
-            )}
+
+            <Button onClick={handleDownload} disabled={!version || isDownloading} className="btn-primary">
+              {isDownloading ? "Starting download" : "Download for Mac"}
+            </Button>
+
+            {status ? <p className={`notice ${status.tone}`}>{status.message}</p> : null}
           </CardContent>
         </Card>
       </div>
     </main>
   );
+}
+
+export default function Home() {
+  const [screen, setScreen] = useState<"checking" | "password" | "loading" | "downloader">("checking");
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const response = await fetch("/api/auth/status", { credentials: "include" });
+        const data = await response.json();
+        setScreen(data.authenticated ? "downloader" : "password");
+      } catch {
+        setScreen("password");
+      }
+    };
+
+    checkAuth();
+  }, []);
+
+  const proceedToLoading = () => {
+    setScreen("loading");
+    window.setTimeout(() => setScreen("downloader"), 2200);
+  };
+
+  if (screen === "checking" || screen === "loading") return <LoadingPage />;
+  if (screen === "password") return <PasswordPage onSuccess={proceedToLoading} />;
+  return <DownloaderPage />;
 }

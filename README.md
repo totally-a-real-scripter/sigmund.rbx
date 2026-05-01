@@ -110,6 +110,8 @@ Based on `.env.example`:
 - `DATABASE_URL` (PostgreSQL connection string)
 - `NODE_ENV` (for example: `development` or `production`)
 - `PORT` (default app port, e.g. `5000`)
+- `SITE_PASSWORD` (password required to access downloader)
+- `SESSION_SECRET` (session cookie signing secret)
 - Optional: external API keys as needed by your deployment
 
 ## Troubleshooting
@@ -125,3 +127,14 @@ This project is based on and forked from `rbxmacdl/rbxmacdl.github.io`.
 ## License
 
 No license file is currently present in this repository.
+
+
+## Password Access
+
+The site gate uses server-side authentication. Update `SITE_PASSWORD` in your `.env` file to change the password.
+
+In development, restart the server after changing `.env` values:
+
+```bash
+npm run dev:server
+```
