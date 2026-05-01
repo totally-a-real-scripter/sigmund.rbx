@@ -7,7 +7,7 @@ declare module "express-session" {
   }
 }
 
-const sitePassword = process.env.SITE_PASSWORD || "letmein";
+const sitePassword = process.env.SITE_PASSWORD || "change-me";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/auth", (req, res) => {
