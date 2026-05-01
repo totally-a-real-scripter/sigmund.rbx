@@ -46,8 +46,7 @@ export function DownloadButton({ version, onError, disabled }: DownloadButtonPro
           </>
         ) : (
           <>
-⬇️
-            <span>Download Now</span>
+            <span>Download now</span>
           </>
         )}
       </Button>
