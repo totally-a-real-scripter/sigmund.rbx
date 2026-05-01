@@ -9,7 +9,7 @@ const PLATFORM_LABEL = "macOS";
 function ProductNav() {
   return (
     <header className="top-nav glass">
-      <p className="brand">Sigmund RBX</p>
+      <p className="brand">sigmund.rbx</p>
       <nav className="nav-actions" aria-label="Primary">
         <a href="#downloader">Downloader</a>
         <a href="#features">Features</a>
@@ -51,13 +51,13 @@ function PasswordPage({ onSuccess }: { onSuccess: () => void }) {
       <div className="app-layout auth-layout">
         <ProductNav />
         <section className="hero-frame glass">
-          <p className="eyebrow">Roblox macOS launcher</p>
-          <h1>Fast, clean Mac download access</h1>
-          <p className="supporting-text">Secure entry keeps the downloader private while maintaining a polished product-style interface.</p>
+          <p className="eyebrow">RBX Downloader</p>
+          <h1>ist fast</h1>
+          <p className="supporting-text">pass so ppl cant steal ts</p>
         </section>
         <section className="auth-panel glass" aria-labelledby="auth-title">
           <h2 id="auth-title">Sign in to continue</h2>
-          <p className="supporting-text">Enter your site password to access the latest macOS package.</p>
+          <p className="supporting-text">Enter your site password to access the page.</p>
           <form onSubmit={onSubmit} className="stack-sm" noValidate>
             <label htmlFor="site-password" className="field-label">Site password</label>
             <Input id="site-password" type="password" autoComplete="current-password" value={password} onChange={(event) => setPassword(event.target.value)} placeholder="Enter your password" required />
@@ -117,7 +117,7 @@ function DownloaderPage() {
         <section className="hero-frame glass">
           <p className="eyebrow">Roblox for macOS</p>
           <h1>Download the latest Roblox Mac build</h1>
-          <p className="supporting-text">A premium-style launcher page with direct access to the latest public player package.</p>
+          <p className="supporting-text">Roblox player downroader cuz weo got blocked vro</p>
           <div className="hero-actions">
             <Button onClick={handleDownload} disabled={!version || isDownloading} className="btn-primary">{isDownloading ? "Starting download..." : "Download for macOS"}</Button>
             <Button variant="outline" onClick={() => refetch()} className="btn-secondary">Refresh build info</Button>
@@ -135,7 +135,7 @@ function DownloaderPage() {
             </div>
             <div className="meta-grid">
               <div><p className="meta-label">Latest build</p>{isLoading || isRefetching ? <p className="meta-value muted">Checking build data...</p> : isError ? <p className="meta-value error">Build data unavailable</p> : <p className="meta-value">{releaseLabel}</p>}</div>
-              <div><p className="meta-label">Install flow</p><p className="meta-value muted">Download ZIP, open installer, launch Roblox.</p></div>
+              <div><p className="meta-label">yeah</p><p className="meta-value muted">uh huh</p></div>
             </div>
             {isError ? <Button variant="outline" className="btn-secondary" onClick={() => refetch()}>Retry build lookup</Button> : null}
             {status ? <p className={`notice ${status.tone}`}>{status.message}</p> : <p className="meta-value muted">Status updates appear here after actions.</p>}
@@ -143,10 +143,10 @@ function DownloaderPage() {
         </Card>
 
         <section className="feature-grid" id="features">
-          <article className="feature-card glass"><h3>Latest macOS build</h3><p>Fetches current version metadata and keeps the version panel easy to verify.</p></article>
-          <article className="feature-card glass"><h3>Direct download</h3><p>One click starts the official package download in a new tab with clean feedback.</p></article>
-          <article className="feature-card glass"><h3>Simple install flow</h3><p>Clear instructions help you move from ZIP to installed player quickly.</p></article>
-          <article className="feature-card glass"><h3>Troubleshooting</h3><p>Retry controls and status messages keep issues readable and recoverable.</p></article>
+          <article className="feature-card glass"><h3>Latest macOS build</h3><p>Fetches current version metadata quickly and efficiently </p></article>
+          <article className="feature-card glass"><h3>Direct download</h3><p>idk what to put here</p></article>
+          <article className="feature-card glass"><h3>yoo</h3><p>hi mom</p></article>
+          <article className="feature-card glass"><h3>what</h3><p>uh may not work sometimes</p></article>
         </section>
       </div>
     </main>
