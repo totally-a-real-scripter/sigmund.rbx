@@ -138,3 +138,12 @@ In development, restart the server after changing `.env` values:
 ```bash
 npm run dev:server
 ```
+
+## Roblox macOS Build Resolution
+
+The downloader resolves the latest official Roblox macOS build dynamically via backend endpoints:
+
+- `GET /api/roblox/latest` fetches and caches Roblox Mac release metadata for 10 minutes.
+- `GET /api/roblox/download` resolves latest metadata then issues an HTTP redirect to the current official Roblox package URL.
+
+The app does not permanently mirror Roblox binaries; it resolves metadata and redirects users to Roblox-hosted downloads.

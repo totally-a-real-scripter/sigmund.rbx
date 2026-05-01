@@ -1,10 +1,8 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { useRobloxVersion } from "@/hooks/use-roblox-version";
-
-const PLATFORM_LABEL = "macOS";
+import { fetchRobloxLatestInfo, useRobloxVersion } from "@/hooks/use-roblox-version";
 
 function ProductNav() {
   return (
@@ -52,8 +50,8 @@ function PasswordPage({ onSuccess }: { onSuccess: () => void }) {
         <ProductNav />
         <section className="hero-frame glass">
           <p className="eyebrow">RBX Downloader</p>
-          <h1>weo got blocked so i made a new site</h1>
-          <p className="supporting-text">pass so ppl cant steal ts</p>
+          <h1>Private Roblox macOS launcher page</h1>
+          <p className="supporting-text">Secure access for trusted users.</p>
         </section>
         <section className="auth-panel glass" aria-labelledby="auth-title">
           <h2 id="auth-title">Sign in to continue</h2>
@@ -90,24 +88,32 @@ function LoadingPage() {
 }
 
 function DownloaderPage() {
-  const { data: version, isLoading, isError, refetch, isRefetching } = useRobloxVersion();
+  const { data, isLoading, isError, refetch, isRefetching } = useRobloxVersion();
   const [isDownloading, setIsDownloading] = useState(false);
-  const [status, setStatus] = useState<{ tone: "success" | "error"; message: string } | null>(null);
-  const releaseLabel = useMemo(() => version || "Unavailable", [version]);
+  const [statusText, setStatusText] = useState("Checking current Roblox release");
+
+  useEffect(() => {
+    if (isLoading || isRefetching) setStatusText("Checking current Roblox release");
+    else if (isError) setStatusText("Unable to fetch the latest build right now");
+    else if (data) setStatusText("Build info updated");
+  }, [isLoading, isRefetching, isError, data]);
+
+  const refreshBuildInfo = async () => {
+    setStatusText("Checking current Roblox release");
+    try {
+      await fetchRobloxLatestInfo(true);
+      await refetch();
+      setStatusText("Build info updated");
+    } catch {
+      setStatusText("Unable to fetch the latest build right now");
+    }
+  };
 
   const handleDownload = () => {
-    if (!version || isDownloading) return;
-    setStatus(null);
+    setStatusText("Starting download");
     setIsDownloading(true);
-    try {
-      const downloadUrl = `https://setup.rbxcdn.com/mac/${version}-RobloxPlayer.zip`;
-      window.open(downloadUrl, "_blank", "noopener,noreferrer");
-      window.setTimeout(() => setStatus({ tone: "success", message: "Download started. Open the ZIP and run RobloxPlayerInstaller." }), 950);
-    } catch {
-      setStatus({ tone: "error", message: "Could not start download. Please try again." });
-    } finally {
-      window.setTimeout(() => setIsDownloading(false), 1900);
-    }
+    window.location.assign("/api/roblox/download");
+    window.setTimeout(() => setIsDownloading(false), 1200);
   };
 
   return (
@@ -117,36 +123,32 @@ function DownloaderPage() {
         <section className="hero-frame glass">
           <p className="eyebrow">Roblox for macOS</p>
           <h1>Download the latest Roblox Mac build</h1>
-          <p className="supporting-text">Roblox player downroader cuz weo got blocked vro</p>
+          <p className="supporting-text">Live build lookup, short caching, and direct official download flow.</p>
           <div className="hero-actions">
-            <Button onClick={handleDownload} disabled={!version || isDownloading} className="btn-primary">{isDownloading ? "Starting download..." : "Download for macOS"}</Button>
-            <Button variant="outline" onClick={() => refetch()} className="btn-secondary">Refresh build info</Button>
+            <Button onClick={handleDownload} disabled={!data || isDownloading || isLoading || isError} className="btn-primary">{isDownloading ? "Starting download..." : "Download for macOS"}</Button>
+            <Button variant="outline" onClick={refreshBuildInfo} disabled={isRefetching} className="btn-secondary">Refresh build info</Button>
           </div>
         </section>
 
         <Card className="status-frame glass" id="downloader">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-[1.4rem] font-bold text-[hsl(220_26%_98%)]">Download Status</CardTitle>
-          </CardHeader>
+          <CardHeader className="pb-3"><CardTitle className="text-[1.4rem] font-bold text-[hsl(220_26%_98%)]">Latest macOS build</CardTitle></CardHeader>
           <CardContent className="stack-md">
             <div className="badge-row">
-              <span className="glass-badge">Platform: {PLATFORM_LABEL}</span>
-              <span className="glass-badge">Channel: Public Release</span>
+              <span className="glass-badge">Platform: {data?.platform ?? "macOS"}</span>
+              <span className="glass-badge">Channel: {data?.channel ?? "Unavailable"}</span>
             </div>
             <div className="meta-grid">
-              <div><p className="meta-label">Latest build</p>{isLoading || isRefetching ? <p className="meta-value muted">Checking build data...</p> : isError ? <p className="meta-value error">Build data unavailable</p> : <p className="meta-value">{releaseLabel}</p>}</div>
-              <div><p className="meta-label">yeah</p><p className="meta-value muted">uh huh</p></div>
+              <div><p className="meta-label">Version</p><p className="meta-value">{data?.version ?? "Unavailable"}</p></div>
+              <div><p className="meta-label">Last checked</p><p className="meta-value muted">{data?.lastChecked ? new Date(data.lastChecked).toLocaleString() : "Not yet checked"}</p></div>
             </div>
-            {isError ? <Button variant="outline" className="btn-secondary" onClick={() => refetch()}>Retry build lookup</Button> : null}
-            {status ? <p className={`notice ${status.tone}`}>{status.message}</p> : <p className="meta-value muted">Status updates appear here after actions.</p>}
+            <p className="meta-value muted">{statusText}</p>
           </CardContent>
         </Card>
 
         <section className="feature-grid" id="features">
-          <article className="feature-card glass"><h3>Latest macOS build</h3><p>Fetches current version metadata quickly and efficiently </p></article>
-          <article className="feature-card glass"><h3>Direct download</h3><p>idk what to put here</p></article>
-          <article className="feature-card glass"><h3>yoo</h3><p>hi mom</p></article>
-          <article className="feature-card glass"><h3>what</h3><p>uh may not work sometimes</p></article>
+          <article className="feature-card glass"><h3>Live metadata</h3><p>Retrieves latest official Roblox macOS version details from Roblox client settings.</p></article>
+          <article className="feature-card glass"><h3>Cached responsibly</h3><p>Server caches metadata for 10 minutes to reduce upstream requests.</p></article>
+          <article className="feature-card glass"><h3>Integrated flow</h3><p>The app resolves the package URL server-side, then starts download from a clean endpoint.</p></article>
         </section>
       </div>
     </main>

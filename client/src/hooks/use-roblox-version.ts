@@ -1,26 +1,33 @@
 import { useQuery } from "@tanstack/react-query";
 
-interface RobloxVersionResponse {
-  clientVersionUpload: string;
+export interface RobloxLatestInfo {
+  platform: string;
+  channel: string;
+  version: string;
+  packageUrl: string;
+  lastChecked: string;
+  source: string;
 }
 
-async function fetchRobloxVersion(): Promise<string> {
-  const response = await fetch("/api/roblox-version", { credentials: "include" });
+async function fetchRobloxLatestInfo(forceRefresh = false): Promise<RobloxLatestInfo> {
+  const url = forceRefresh ? "/api/roblox/latest?refresh=true" : "/api/roblox/latest";
+  const response = await fetch(url, { credentials: "include" });
 
   if (!response.ok) {
-    throw new Error("Unable to fetch latest build version.");
+    throw new Error("Unable to fetch latest build info.");
   }
 
-  const data: RobloxVersionResponse = await response.json();
-  return data.clientVersionUpload;
+  return response.json() as Promise<RobloxLatestInfo>;
 }
 
 export function useRobloxVersion() {
   return useQuery({
-    queryKey: ["roblox-version"],
-    queryFn: fetchRobloxVersion,
+    queryKey: ["roblox-latest"],
+    queryFn: () => fetchRobloxLatestInfo(false),
     staleTime: 5 * 60 * 1000,
     refetchInterval: 10 * 60 * 1000,
-    retry: 2,
+    retry: 1,
   });
 }
+
+export { fetchRobloxLatestInfo };
