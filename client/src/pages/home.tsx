@@ -52,7 +52,7 @@ function PasswordPage({ onSuccess }: { onSuccess: () => void }) {
         <ProductNav />
         <section className="hero-frame glass">
           <p className="eyebrow">RBX Downloader</p>
-          <h1>ist fast</h1>
+          <h1>weo got blocked so i made a new site</h1>
           <p className="supporting-text">pass so ppl cant steal ts</p>
         </section>
         <section className="auth-panel glass" aria-labelledby="auth-title">
