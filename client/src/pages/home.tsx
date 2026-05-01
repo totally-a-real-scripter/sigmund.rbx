@@ -1,10 +1,13 @@
-import { useMemo, useState } from "react";
+import { FormEvent, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { useRobloxVersion } from "@/hooks/use-roblox-version";
 
 const PLATFORM_LABEL = "macOS";
+const AUTH_STORAGE_KEY = "site_unlocked";
+const SITE_PASSWORD = import.meta.env.VITE_SITE_PASSWORD || "letmein";
 
 function InlineNotice({
   tone,
@@ -29,6 +32,10 @@ function InlineNotice({
 
 export default function Home() {
   const { data: version, isLoading, isError, refetch, isRefetching } = useRobloxVersion();
+  const [isUnlocked, setIsUnlocked] = useState(() => window.localStorage.getItem(AUTH_STORAGE_KEY) === "true");
+  const [passwordInput, setPasswordInput] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+  const [showLoadingScreen, setShowLoadingScreen] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
   const [downloadProgress, setDownloadProgress] = useState(0);
   const [statusMessage, setStatusMessage] = useState<string>("");
@@ -38,6 +45,23 @@ export default function Home() {
     if (!version) return "Unavailable";
     return version;
   }, [version]);
+
+  const handleUnlock = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (passwordInput !== SITE_PASSWORD) {
+      setPasswordError("Incorrect password. Please try again.");
+      return;
+    }
+
+    setPasswordError("");
+    setShowLoadingScreen(true);
+
+    window.setTimeout(() => {
+      window.localStorage.setItem(AUTH_STORAGE_KEY, "true");
+      setIsUnlocked(true);
+      setShowLoadingScreen(false);
+    }, 900);
+  };
 
   const beginProgressAnimation = () => {
     setDownloadProgress(10);
@@ -72,6 +96,42 @@ export default function Home() {
       }, 2200);
     }
   };
+
+  if (!isUnlocked) {
+    return (
+      <main className="page-shell auth-shell">
+        <div className="page-glow" aria-hidden="true" />
+        <Card className="glass-panel auth-card fade-in">
+          <CardHeader>
+            <CardTitle>Protected Access</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="auth-copy">Enter the site password to continue.</p>
+            <form onSubmit={handleUnlock} className="auth-form">
+              <Input
+                type="password"
+                value={passwordInput}
+                onChange={(event) => setPasswordInput(event.target.value)}
+                placeholder="Enter password"
+                autoComplete="current-password"
+              />
+              <Button type="submit" className="primary-action">Unlock site</Button>
+            </form>
+            {passwordError && <p className="auth-error">{passwordError}</p>}
+          </CardContent>
+        </Card>
+
+        {showLoadingScreen && (
+          <div className="loading-overlay" role="status" aria-live="polite">
+            <div className="loading-card glass-panel">
+              <p>Loading downloader…</p>
+              <div className="loading-bar" aria-hidden="true" />
+            </div>
+          </div>
+        )}
+      </main>
+    );
+  }
 
   return (
     <main className="page-shell">
@@ -147,48 +207,6 @@ export default function Home() {
             )}
           </CardContent>
         </Card>
-
-        <section id="help" className="info-grid">
-          <Card className="glass-panel">
-            <CardHeader>
-              <CardTitle>Installation steps</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ol className="steps">
-                <li><span>1</span>Download the latest ZIP package.</li>
-                <li><span>2</span>Open the ZIP and run the installer file.</li>
-                <li><span>3</span>Finish setup and launch Roblox from Applications.</li>
-              </ol>
-            </CardContent>
-          </Card>
-
-          <Card className="glass-panel">
-            <CardHeader>
-              <CardTitle>Troubleshooting</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="faq-list">
-                <article>
-                  <h3>Installer blocked by macOS</h3>
-                  <p>Open System Settings, then Privacy & Security, and allow RobloxPlayerInstaller to run.</p>
-                </article>
-                <article>
-                  <h3>Download did not begin</h3>
-                  <p>Check popup settings and retry. The downloader opens the Roblox package in a new tab.</p>
-                </article>
-                <article>
-                  <h3>App does not launch</h3>
-                  <p>Restart macOS and reinstall with the latest package shown in the status card.</p>
-                </article>
-              </div>
-            </CardContent>
-          </Card>
-        </section>
-
-        <footer className="footer glass-panel">
-          <p>Roblox Mac Downloader</p>
-          <p>Build source from Roblox release endpoints</p>
-        </footer>
       </div>
     </main>
   );
