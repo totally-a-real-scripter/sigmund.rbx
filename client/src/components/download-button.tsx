@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
 
 interface DownloadButtonProps {
   version?: string;
@@ -10,27 +9,13 @@ interface DownloadButtonProps {
 
 export function DownloadButton({ version, onError, disabled }: DownloadButtonProps) {
   const [isDownloading, setIsDownloading] = useState(false);
-  const [downloadProgress, setDownloadProgress] = useState(0);
 
   const handleDownload = async () => {
     if (isDownloading || !version) return;
 
     setIsDownloading(true);
-    setDownloadProgress(0);
 
     try {
-      // Simulate download progress
-      const progressInterval = setInterval(() => {
-        setDownloadProgress(prev => {
-          const newProgress = prev + Math.random() * 15;
-          if (newProgress >= 100) {
-            clearInterval(progressInterval);
-            return 100;
-          }
-          return newProgress;
-        });
-      }, 200);
-
       // Open download URL
       const downloadUrl = `http://setup.rbxcdn.com/mac/${version}-RobloxPlayer.zip`;
       window.open(downloadUrl, '_blank');
@@ -38,14 +23,12 @@ export function DownloadButton({ version, onError, disabled }: DownloadButtonPro
       // Reset after 3 seconds
       setTimeout(() => {
         setIsDownloading(false);
-        setDownloadProgress(0);
-      }, 3000);
+          }, 3000);
 
     } catch (error) {
       onError('Failed to initiate download. Please try again.');
       setIsDownloading(false);
-      setDownloadProgress(0);
-    }
+      }
   };
 
   return (
@@ -68,16 +51,6 @@ export function DownloadButton({ version, onError, disabled }: DownloadButtonPro
           </>
         )}
       </Button>
-
-      {isDownloading && (
-        <div className="bg-muted rounded-lg p-4" data-testid="download-progress">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-muted-foreground">Downloading...</span>
-            <span className="text-sm text-muted-foreground">{Math.round(downloadProgress)}%</span>
-          </div>
-          <Progress value={downloadProgress} className="w-full" />
-        </div>
-      )}
     </div>
   );
 }

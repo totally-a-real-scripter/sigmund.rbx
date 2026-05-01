@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Progress } from "@/components/ui/progress";
 import { useRobloxVersion } from "@/hooks/use-roblox-version";
 
 const PLATFORM_LABEL = "macOS";
@@ -87,24 +86,14 @@ function LoadingPage() {
 function DownloaderPage() {
   const { data: version, isLoading, isError, refetch, isRefetching } = useRobloxVersion();
   const [isDownloading, setIsDownloading] = useState(false);
-  const [downloadProgress, setDownloadProgress] = useState(0);
   const [status, setStatus] = useState<{ tone: "success" | "error"; message: string } | null>(null);
 
   const releaseLabel = useMemo(() => version || "Unavailable", [version]);
 
-  const beginProgressAnimation = () => {
-    const checkpoints = [14, 28, 44, 67, 84, 100];
-    checkpoints.forEach((value, index) => {
-      window.setTimeout(() => setDownloadProgress(value), 260 * (index + 1));
-    });
-  };
-
   const handleDownload = () => {
     if (!version || isDownloading) return;
     setStatus(null);
-    setDownloadProgress(8);
     setIsDownloading(true);
-    beginProgressAnimation();
 
     try {
       const downloadUrl = `https://setup.rbxcdn.com/mac/${version}-RobloxPlayer.zip`;
@@ -117,7 +106,6 @@ function DownloaderPage() {
     } finally {
       window.setTimeout(() => {
         setIsDownloading(false);
-        setDownloadProgress(0);
       }, 2300);
     }
   };
@@ -161,16 +149,8 @@ function DownloaderPage() {
               </div>
             </div>
 
-            <div className="stack-sm">
-              <div className="inline-actions">
-                <p className="meta-label">Progress</p>
-                <p className="meta-label">{Math.round(downloadProgress)}%</p>
-              </div>
-              <Progress value={downloadProgress} />
-            </div>
-
             <Button onClick={handleDownload} disabled={!version || isDownloading} className="btn-primary">
-              {isDownloading ? "Starting download" : "Download for Mac"}
+              {isDownloading ? "Starting download…" : "Download for Mac"}
             </Button>
 
             {status ? <p className={`notice ${status.tone}`}>{status.message}</p> : null}

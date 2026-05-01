@@ -62,12 +62,12 @@ h1 {
   color: hsl(220 23% 97%);
   text-shadow: 0 0 16px rgba(178, 198, 255, 0.12);
 }
-.caption, .supporting-text, .meta-label { color: hsl(220 14% 82%); }
+.caption, .supporting-text, .meta-label { color: hsl(220 14% 86%); }
 .eyebrow { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.09em; color: hsl(var(--muted-foreground)); }
 .supporting-text {
   line-height: 1.6;
   max-width: 50ch;
-  color: hsl(220 14% 84%);
+  color: hsl(220 14% 87%);
 }
 .stack-sm { display: grid; gap: 0.7rem; }
 .stack-md { display: grid; gap: 1rem; }
@@ -93,8 +93,8 @@ input:focus-visible, button:focus-visible { outline: 2px solid hsla(var(--ring),
   word-break: break-word;
   color: hsl(220 22% 94%);
 }
-.meta-value.muted { font-weight: 500; color: hsl(220 14% 78%); }
-.meta-value.error { color: hsl(var(--destructive)); }
+.meta-value.muted { font-weight: 500; color: hsl(220 14% 82%); }
+.meta-value.error { color: hsl(0 88% 73%); }
 .inline-actions { display: flex; justify-content: space-between; align-items: center; gap: 0.75rem; }
 .inline-error { color: hsl(1 95% 74%); font-size: 0.88rem; }
 
@@ -133,7 +133,7 @@ input:focus-visible, button:focus-visible { outline: 2px solid hsla(var(--ring),
 .status-frame .meta-label,
 .loading-panel .supporting-text,
 .auth-panel .supporting-text {
-  color: hsl(220 14% 84%);
+  color: hsl(220 14% 87%);
 }
 
 .page-fade { animation: fade 0.35s ease-out; }
