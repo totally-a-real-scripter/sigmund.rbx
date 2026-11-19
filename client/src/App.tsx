@@ -16,9 +16,7 @@ function Router() {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <div className="dark">
-        <Router />
-      </div>
+      <Router />
     </QueryClientProvider>
   );
 }

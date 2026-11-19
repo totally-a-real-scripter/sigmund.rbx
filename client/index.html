@@ -1,10 +1,26 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="black" data-accent="mustard" data-motion="on">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
-    <title>sigmund.rbx</title>
-    <link rel="icon" type="image/png" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sigmund:rbx · Roblox for Mac</title>
+    <meta name="description" content="Sigmund:rbx, the Sigmund:re Roblox downloader. Grab the latest Roblox build for macOS in one click." />
+    <meta name="theme-color" content="#0b0b0c" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="alternate icon" href="/favicon.ico" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <script>
+      /* Apply saved settings before the page paints (keep defaults in sync with SETTINGS_DEFAULTS in src/lib/settings.ts). */
+      (function () {
+        var o = { theme: "black", accent: "mustard", motion: true };
+        try { var s = JSON.parse(localStorage.getItem("sigrbx:settings")); if (s) for (var k in s) o[k] = s[k]; } catch (e) {}
+        var t = o.theme === "system" ? (matchMedia("(prefers-color-scheme: light)").matches ? "paper" : "black") : o.theme;
+        if (!/^[a-z0-9-]+$/.test(t)) t = "black";
+        var h = document.documentElement;
+        h.dataset.theme = t; h.dataset.accent = o.accent; h.dataset.motion = o.motion ? "on" : "off";
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>
